@@ -8,23 +8,34 @@ import '../providers/orders.dart' hide OrderItem;
 
 class OrdersScreen extends StatelessWidget {
   static const String routeName = '/orders';
+
   @override
   Widget build(BuildContext context) {
-    final orderData = Provider.of<Orders>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Orders'),
       ),
-      body: orderData.orders.isEmpty
-          ? Center(
-              child: Text(
-                'Order Something',
-              ),
-            )
-          : ListView.builder(
-              itemBuilder: (ctx, index) => OrderItem(orderData.orders[index]),
-              itemCount: orderData.orders.length,
-            ),
+      body: FutureBuilder(
+        future: Provider.of<Orders>(context, listen: false).fetchAndSetOrders(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Center(child: CircularProgressIndicator());
+          else {
+            if (snapshot.error != null)
+              return Center(
+                child: Text('An Error Occured'),
+              );
+            else
+              return Consumer<Orders>(
+                builder: (ctx, orderData, child) => ListView.builder(
+                  itemBuilder: (ctx, index) =>
+                      OrderItem(orderData.orders[index]),
+                  itemCount: orderData.orders.length,
+                ),
+              );
+          }
+        },
+      ),
       drawer: AppDrawer(),
     );
   }
