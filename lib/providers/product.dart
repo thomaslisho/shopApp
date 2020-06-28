@@ -11,7 +11,8 @@ class Product with ChangeNotifier {
   final String imageUrl;
   bool isFavorite;
 
-  static const _url = 'https://my-shop-flutter-project.firebaseio.com/products';
+  static const _url =
+      'https://my-shop-flutter-project.firebaseio.com/userFavourites';
 
   Product({
     @required this.id,
@@ -22,15 +23,15 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  Future<void> toggleFavoriteStatus() async {
-    var url = '$_url/$id.json';
+  Future<void> toggleFavoriteStatus(String token, String userId) async {
+    var url = '$_url/$userId/$id.json?auth=$token';
     final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
     try {
-      final response = await http.patch(
+      final response = await http.put(
         url,
-        body: json.encode({'isFavourite': this.isFavorite}),
+        body: json.encode(isFavorite),
       );
       if (response.statusCode >= 400) {
         isFavorite = oldStatus;
